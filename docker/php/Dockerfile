@@ -1,39 +1,43 @@
 FROM php:5.4-apache
 
-# Composer のバージョン と ハッシュ値
-# ARG composer_ver=1.10.13
-# ARG composer_hash=5ca7445cfd48dd27c5a84aa005a47b4d9fd91132313830609875df3a6973708f
-
-# Composer の保存先
-# ARG composer_path=/usr/local/bin/composer
-
-# RUN apt-get update \
-  # Composer インストール
-#   && php -r "copy('https://getcomposer.org/download/$composer_ver/composer.phar', '$composer_path');" \
-#   && chmod 755 $composer_path \
-#   && php -r "if (hash_file('sha256', '$composer_path') !== '$composer_hash') { \
-#           echo '!!! Failed to install Composer !!!'; \
-#           unlink('$composer_path'); \
-#       } \
-#       echo PHP_EOL;" \
-
-# Composer インストール
-# RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-#   && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-#   && php -r "unlink('composer-setup.php');"
+RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
+    && apt-get update
 
 # RUN apt-get install openssl ca-certificates
 
+RUN apt-get install -y --allow-unauthenticated lynx
+
+RUN apt-get install -y  --allow-unauthenticated libxslt1-dev
+RUN docker-php-ext-configure xsl --with-xsl=/usr/include
+RUN docker-php-ext-install xsl
+
+
+RUN apt-get install -y --allow-unauthenticated vim
+
 COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
 
+# ドキュメントルートの作成
+# RUN mkdir -p /example/www/root/htdocs
+
+# ログフォルダの作成
+# RUN mkdir -p /example/www/root/logs
+
+# httpd.confのバックアップを作成
+# RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk
+
+# RUN cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk
+
+# RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
+
+# ローカルにソースを配置し、コンテナ内のディレクトリにコピー
+# COPY ./xxx /path/in/container/yyy
 
 
+# その他の設定やコマンドを記述
 
 
-
-
-
-#   && apt-get install -y vim \
+# RUN apt-get install -y nano
 #   && apt-get install -y unzip \
 #   && apt-get install -y libicu-dev \
 #   && docker-php-ext-install intl \
