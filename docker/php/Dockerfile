@@ -4,10 +4,6 @@ RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources
     && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
     && apt-get update
 
-# ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-
-# RUN install-php-extensions gd xdebug
-
 RUN apt-get install -y --allow-unauthenticated lynx
 
 RUN apt-get install -y  --allow-unauthenticated libxslt1-dev libpng-dev
@@ -15,9 +11,7 @@ RUN docker-php-ext-configure xsl --with-xsl=/usr/include
 RUN docker-php-ext-install xsl
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install intl
-
 RUN docker-php-ext-install gd
-
 
 # RUN apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
 #         libfreetype6-dev \
@@ -48,25 +42,55 @@ RUN apt-get install -y --allow-unauthenticated zip unzip
 
 COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
 
-# RUN composer config --global --disable-tls true
-# RUN composer config --global repo.packagist.org disable-tls true
-
-
-# RUN composer config --global secure-http false
-
 
 # ドキュメントルートの作成
-# RUN mkdir -p /example/www/root/htdocs
+RUN mkdir -p /test/example.com/htdocs
+RUN chown -R www-data:www-data /test/example.com/htdocs/
+RUN chmod -R 755 /test/example.com/htdocs/
+# RUN echo "Hello" > /test/example.com/htdocs/index.html
 
 # ログフォルダの作成
-# RUN mkdir -p /example/www/root/logs
+# RUN mkdir -p /test/www/example.com/logs
+
+#mineタイプファイルをhttp/conf配下にも配置
+
 
 # httpd.confのバックアップを作成
-# RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk
+RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk
+RUN cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.bk
+RUN cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf.bk
 
-# RUN cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk
+# Apacheの設定を変更してDocumentRootを更新する
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/apache2.conf
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/sites-available/default-ssl.conf
 
-# RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
+
+
+RUN cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk
+RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
+
+
+# Apacheを再起動
+# RUN service apache2 restart
+
+# コンテナログイン時のパスを最後に指定
+WORKDIR  /test/example.com/htdocs
+
+
+
+
+#php.iniファイルをバックアップ
+
+#php.confをバックアップ
+
+#my.cnfをバックアップ
+
+#server.cnfをバックアップ
+
+
+
+
 
 # ローカルにソースを配置し、コンテナ内のディレクトリにコピー
 # COPY ./xxx /path/in/container/yyy
