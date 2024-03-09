@@ -49,6 +49,12 @@ RUN chown -R www-data:www-data /test/example.com/htdocs/
 RUN chmod -R 755 /test/example.com/htdocs/
 # RUN echo "Hello" > /test/example.com/htdocs/index.html
 
+# RUN chown -R www-data:www-data /test/example.com
+
+# RUN mkdir -p /test/example.com/app
+# RUN chown -R www-data:www-data /test/example.com/app/
+# RUN chmod -R 755 /test/example.com/app/
+
 # ログフォルダの作成
 # RUN mkdir -p /test/www/example.com/logs
 
