@@ -41,7 +41,7 @@ RUN apt-get install -y --allow-unauthenticated vim
 RUN apt-get install -y --allow-unauthenticated zip unzip
 
 # COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
 
 # ドキュメントルートの作成
