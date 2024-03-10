@@ -40,7 +40,8 @@ RUN apt-get install -y --allow-unauthenticated openssl ca-certificates
 RUN apt-get install -y --allow-unauthenticated vim
 RUN apt-get install -y --allow-unauthenticated zip unzip
 
-COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
+# COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 
 # ドキュメントルートの作成
@@ -49,7 +50,8 @@ RUN chown -R www-data:www-data /test/example.com/htdocs/
 RUN chmod -R 755 /test/example.com/htdocs/
 # RUN echo "Hello" > /test/example.com/htdocs/index.html
 
-# RUN chown -R www-data:www-data /test/example.com
+#ルートディレクトリの所有者変更
+RUN chown -R www-data:www-data /test/example.com
 
 # RUN mkdir -p /test/example.com/app
 # RUN chown -R www-data:www-data /test/example.com/app/

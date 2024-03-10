@@ -10,7 +10,7 @@ services:
       # - ./:/var/www
     #  - .:/var/www/html
      - ./html:/test/example.com/htdocs
-    #  - ./app:/test/example.com/app
+     - ./app:/test/example.com
     ports:
       - ${WEB_PORT}:80
     # command: ["sh", "-c", "chmod -R 755 /var/www && apache2-foreground"]
