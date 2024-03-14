@@ -1,9 +1,11 @@
 FROM php:5.4-apache
 
+# Update package sources
 RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources.list \
     && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
     && apt-get update
 
+# Install required packages
 RUN apt-get install -y --allow-unauthenticated \
         lynx \
         libxslt1-dev \
@@ -11,26 +13,20 @@ RUN apt-get install -y --allow-unauthenticated \
         openssl ca-certificates \
         vim \
         zip unzip \
+        libapache2-mod-php \
+        libicu-dev \
     && docker-php-ext-configure xsl --with-xsl=/usr/include \
-    && docker-php-ext-install xsl \
-    && docker-php-ext-install mbstring \
-    && docker-php-ext-install intl \
-    && docker-php-ext-install gd \
-    && docker-php-ext-install mysqli pdo_mysql
+    && docker-php-ext-install \
+            xsl \
+            mbstring \
+            intl \
+            gd \
+            mysqli \
+            pdo_mysql
 
+# Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
-# RUN apt-get install -y --allow-unauthenticated lynx
-# RUN apt-get install -y  --allow-unauthenticated libxslt1-dev libpng-dev
-# RUN docker-php-ext-configure xsl --with-xsl=/usr/include
-# RUN docker-php-ext-install xsl
-# RUN docker-php-ext-install mbstring
-# RUN docker-php-ext-install intl
-# RUN docker-php-ext-install gd
-# RUN docker-php-ext-install mysqli pdo_mysql
-# RUN apt-get install -y --allow-unauthenticated openssl ca-certificates
-# RUN apt-get install -y --allow-unauthenticated vim
-# RUN apt-get install -y --allow-unauthenticated zip unzip
 
 # RUN apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
 #         libfreetype6-dev \
@@ -55,10 +51,10 @@ COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 # 	&& docker-php-ext-install -j$(nproc) gd
 
 
-# ドキュメントルートの作成
-RUN mkdir -p /test/example.com/htdocs
-RUN chown -R www-data:www-data /test/example.com/htdocs/
-RUN chmod -R 755 /test/example.com/htdocs/
+# Create document root
+RUN mkdir -p /test/example.com/htdocs \
+    && chown -R www-data:www-data /test/example.com/htdocs/ \
+    && chmod -R 755 /test/example.com/htdocs/
 
 #ルートディレクトリの所有者変更
 RUN chown -R www-data:www-data /test/example.com
@@ -69,19 +65,19 @@ RUN chown -R www-data:www-data /test/example.com
 #mineタイプファイルをhttp/conf配下にも配置
 
 
-# httpd.confのバックアップを作成
-RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk
-RUN cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.bk
-RUN cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf.bk
-
+# Apache設定ファイルのバックアップ
+# Backup Apache configuration files
+RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk \
+    && cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.bk \
+    && cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf.bk \
+    && cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk \
+    && cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
 # Apacheの設定を変更してDocumentRootを更新する
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/apache2.conf
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/000-default.conf
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/default-ssl.conf
-
-RUN cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk
-RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
-
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/apache2.conf \
+    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/default-ssl.conf
+# モジュール読み込み
+RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
 
 # Apacheを再起動
 # RUN service apache2 restart
