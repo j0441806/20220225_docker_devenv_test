@@ -4,14 +4,33 @@ RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources
     && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
     && apt-get update
 
-RUN apt-get install -y --allow-unauthenticated lynx
+RUN apt-get install -y --allow-unauthenticated \
+        lynx \
+        libxslt1-dev \
+        libpng-dev \
+        openssl ca-certificates \
+        vim \
+        zip unzip \
+    && docker-php-ext-configure xsl --with-xsl=/usr/include \
+    && docker-php-ext-install xsl \
+    && docker-php-ext-install mbstring \
+    && docker-php-ext-install intl \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install mysqli pdo_mysql
 
-RUN apt-get install -y  --allow-unauthenticated libxslt1-dev libpng-dev
-RUN docker-php-ext-configure xsl --with-xsl=/usr/include
-RUN docker-php-ext-install xsl
-RUN docker-php-ext-install mbstring
-RUN docker-php-ext-install intl
-RUN docker-php-ext-install gd
+COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
+
+# RUN apt-get install -y --allow-unauthenticated lynx
+# RUN apt-get install -y  --allow-unauthenticated libxslt1-dev libpng-dev
+# RUN docker-php-ext-configure xsl --with-xsl=/usr/include
+# RUN docker-php-ext-install xsl
+# RUN docker-php-ext-install mbstring
+# RUN docker-php-ext-install intl
+# RUN docker-php-ext-install gd
+# RUN docker-php-ext-install mysqli pdo_mysql
+# RUN apt-get install -y --allow-unauthenticated openssl ca-certificates
+# RUN apt-get install -y --allow-unauthenticated vim
+# RUN apt-get install -y --allow-unauthenticated zip unzip
 
 # RUN apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
 #         libfreetype6-dev \
@@ -35,27 +54,14 @@ RUN docker-php-ext-install gd
 # 	&& docker-php-ext-configure gd --with-freetype --with-jpeg \
 # 	&& docker-php-ext-install -j$(nproc) gd
 
-RUN apt-get install -y --allow-unauthenticated openssl ca-certificates
-
-RUN apt-get install -y --allow-unauthenticated vim
-RUN apt-get install -y --allow-unauthenticated zip unzip
-
-# COPY --from=composer:1.10.27 /usr/bin/composer /usr/bin/composer
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
-
 
 # ドキュメントルートの作成
 RUN mkdir -p /test/example.com/htdocs
 RUN chown -R www-data:www-data /test/example.com/htdocs/
 RUN chmod -R 755 /test/example.com/htdocs/
-# RUN echo "Hello" > /test/example.com/htdocs/index.html
 
 #ルートディレクトリの所有者変更
 RUN chown -R www-data:www-data /test/example.com
-
-# RUN mkdir -p /test/example.com/app
-# RUN chown -R www-data:www-data /test/example.com/app/
-# RUN chmod -R 755 /test/example.com/app/
 
 # ログフォルダの作成
 # RUN mkdir -p /test/www/example.com/logs
@@ -69,11 +75,9 @@ RUN cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-availabl
 RUN cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf.bk
 
 # Apacheの設定を変更してDocumentRootを更新する
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/apache2.conf
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/sites-available/000-default.conf
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/htdocs|g' /etc/apache2/sites-available/default-ssl.conf
-
-
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/apache2.conf
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/default-ssl.conf
 
 RUN cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk
 RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
@@ -83,7 +87,7 @@ RUN cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/user
 # RUN service apache2 restart
 
 # コンテナログイン時のパスを最後に指定
-WORKDIR  /test/example.com/htdocs
+WORKDIR  /test/example.com
 
 
 
@@ -95,13 +99,6 @@ WORKDIR  /test/example.com/htdocs
 #my.cnfをバックアップ
 
 #server.cnfをバックアップ
-
-
-
-
-
-# ローカルにソースを配置し、コンテナ内のディレクトリにコピー
-# COPY ./xxx /path/in/container/yyy
 
 
 # その他の設定やコマンドを記述

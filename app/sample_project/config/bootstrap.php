@@ -102,7 +102,7 @@ ini_set('intl.default_locale', 'en_US');
 /**
  * Register application error and exception handlers.
  */
-$isCli = PHP_SAPI === 'cli';
+$isCli = php_sapi_name() === 'cli';
 if ($isCli) {
     (new ConsoleErrorHandler(Configure::read('Error')))->register();
 } else {
@@ -181,7 +181,6 @@ Request::addDetector('tablet', function ($request) {
  */
 
 Plugin::load('Migrations');
-Plugin::load('Migrations', ['path' => ROOT . DS . 'vendor' . DS . 'cakephp' . DS . 'migrations']);
 
 // Only try to load DebugKit in development mode
 // Debug Kit should not be installed on a production system
