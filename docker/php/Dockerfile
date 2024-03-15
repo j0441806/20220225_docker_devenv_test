@@ -13,7 +13,7 @@ RUN apt-get install -y --allow-unauthenticated \
         openssl ca-certificates \
         vim \
         zip unzip \
-        libapache2-mod-php \
+        # libapache2-mod-php \
         libicu-dev \
     && docker-php-ext-configure xsl --with-xsl=/usr/include \
     && docker-php-ext-install \
@@ -22,7 +22,9 @@ RUN apt-get install -y --allow-unauthenticated \
             intl \
             gd \
             mysqli \
-            pdo_mysql
+            pdo_mysql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
@@ -76,17 +78,8 @@ RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk \
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/apache2.conf \
     && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/default-ssl.conf
-# モジュール読み込み
+# mod_rewriteモジュール読み込み
 RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
-
-# Apacheを再起動
-# RUN service apache2 restart
-
-# コンテナログイン時のパスを最後に指定
-WORKDIR  /test/example.com
-
-
-
 
 #php.iniファイルをバックアップ
 
@@ -96,13 +89,11 @@ WORKDIR  /test/example.com
 
 #server.cnfをバックアップ
 
+# コンテナログイン時のパスを最後に指定
+WORKDIR  /test/example.com
 
-# その他の設定やコマンドを記述
 
 
-# RUN apt-get install -y nano
-#   && apt-get install -y unzip \
-#   && apt-get install -y libicu-dev \
-#   && docker-php-ext-install intl \
-#   && docker-php-ext-install pdo_mysql \
-#   && a2enmod rewrite
+
+
+
