@@ -29,30 +29,6 @@ RUN apt-get install -y --allow-unauthenticated \
 # Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
-
-# RUN apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
-#         libfreetype6-dev \
-#         libjpeg62-turbo-dev \
-#         libpng-dev \
-#         libicu-dev \
-#         libxml2-dev \
-#         libxslt1-dev \
-#     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-#     && docker-php-ext-install -j$(nproc) \
-#         gd \
-#         mbstring \
-#         intl \
-#     && apt-get clean \
-#     && rm -rf /var/lib/apt/lists/*
-
-# RUN apt-get update && apt-get install -y \
-# 		libfreetype-dev \
-# 		libjpeg62-turbo-dev \
-# 		libpng-dev \
-# 	&& docker-php-ext-configure gd --with-freetype --with-jpeg \
-# 	&& docker-php-ext-install -j$(nproc) gd
-
-
 # Create document root
 RUN mkdir -p /test/example.com/htdocs \
     && chown -R www-data:www-data /test/example.com/htdocs/ \
