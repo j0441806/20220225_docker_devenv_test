@@ -13,8 +13,9 @@ RUN apt-get install -y --allow-unauthenticated \
         openssl ca-certificates \
         vim \
         zip unzip \
-        # libapache2-mod-php \
         libicu-dev \
+        # a2enmod \
+        # libapache2-mod-php \
     && docker-php-ext-configure xsl --with-xsl=/usr/include \
     && docker-php-ext-install \
             xsl \
@@ -25,6 +26,12 @@ RUN apt-get install -y --allow-unauthenticated \
             pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# apacheのrewriteを有効にする
+# RUN cd /etc/apache2/mods-enabled \
+#     && ln -s ../mods-available/rewrite.load
+# Apacheのrewriteモジュールを有効にする
+RUN ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
 
 # Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
@@ -51,11 +58,15 @@ RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk \
     && cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk \
     && cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
 # Apacheの設定を変更してDocumentRootを更新する
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/apache2.conf \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/sample_project|g' /etc/apache2/sites-available/default-ssl.conf
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/apache2.conf \
+    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/sites-available/default-ssl.conf \
+    && sed -i 's|<Directory /var/www/>|<Directory /test/example.com/>|g' /etc/apache2/apache2.conf \
+    && sed -i '/<Directory \/>/,/<\/Directory>/ { s|AllowOverride None|AllowOverride All|; s|Require all denied|Require all granted|; }' /etc/apache2/apache2.conf
+
 # mod_rewriteモジュール読み込み
-RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
+# RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
+
 
 #php.iniファイルをバックアップ
 
