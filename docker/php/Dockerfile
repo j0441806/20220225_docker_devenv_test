@@ -14,8 +14,6 @@ RUN apt-get install -y --allow-unauthenticated \
         vim \
         zip unzip \
         libicu-dev \
-        # a2enmod \
-        # libapache2-mod-php \
     && docker-php-ext-configure xsl --with-xsl=/usr/include \
     && docker-php-ext-install \
             xsl \
@@ -27,60 +25,22 @@ RUN apt-get install -y --allow-unauthenticated \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# apacheのrewriteを有効にする
-# RUN cd /etc/apache2/mods-enabled \
-#     && ln -s ../mods-available/rewrite.load
-# Apacheのrewriteモジュールを有効にする
+# Enable Apache rewrite module
 RUN ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
-
-# Install Composer
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
-
-# Create document root
-RUN mkdir -p /test/example.com/htdocs \
-    && chown -R www-data:www-data /test/example.com/htdocs/ \
-    && chmod -R 755 /test/example.com/htdocs/
-
-#ルートディレクトリの所有者変更
-RUN chown -R www-data:www-data /test/example.com
-
-# ログフォルダの作成
-# RUN mkdir -p /test/www/example.com/logs
-
-#mineタイプファイルをhttp/conf配下にも配置
-
-
-# Apache設定ファイルのバックアップ
-# Backup Apache configuration files
-RUN cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bk \
-    && cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.bk \
-    && cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf.bk \
-    && cp /etc/apache2/mods-available/autoindex.conf /etc/apache2/mods-available/autoindex.conf.bk \
-    && cp /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.bk
-# Apacheの設定を変更してDocumentRootを更新する
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/apache2.conf \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /test/example.com/app|g' /etc/apache2/sites-available/default-ssl.conf \
-    && sed -i 's|<Directory /var/www/>|<Directory /test/example.com/>|g' /etc/apache2/apache2.conf \
-    && sed -i '/<Directory \/>/,/<\/Directory>/ { s|AllowOverride None|AllowOverride All|; s|Require all denied|Require all granted|; }' /etc/apache2/apache2.conf
 
 # mod_rewriteモジュール読み込み
 # RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
 
+# Install Composer
+COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
-#php.iniファイルをバックアップ
+# COPY php.ini /usr/local/etc/php/
 
-#php.confをバックアップ
+# Initial setup
+COPY setup.sh /tmp/setup.sh
+RUN chown www-data:www-data /tmp/setup.sh
+RUN chmod +x /tmp/setup.sh
+RUN /tmp/setup.sh
 
-#my.cnfをバックアップ
-
-#server.cnfをバックアップ
-
-# コンテナログイン時のパスを最後に指定
+# Set working directory
 WORKDIR  /test/example.com
-
-
-
-
-
-

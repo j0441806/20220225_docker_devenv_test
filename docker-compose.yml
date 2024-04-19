@@ -7,17 +7,15 @@ services:
     depends_on:
       - db
     volumes:
-     - .:/test/example.com
+     - ./example.com:/test/example.com
     ports:
       - ${WEB_PORT}:80
 
   db:
-    # image: mariadb:5.5.64
     build:
       context: ./docker/mariadb
       dockerfile: Dockerfile
     volumes:
-      # - ./mariadb/data:/var/lib/mysql
       - mysql_data:/var/lib/mysql
       - ./docker/mariadb/my.cnf:/etc/mysql/conf.d/mariadb.conf
       - ./docker/mariadb/init:/docker-entrypoint-initdb.d
