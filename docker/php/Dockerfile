@@ -28,9 +28,6 @@ RUN apt-get install -y --allow-unauthenticated \
 # Enable Apache rewrite module
 RUN ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
 
-# mod_rewriteモジュール読み込み
-# RUN echo "LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so" >> /etc/apache2/apache2.conf
-
 # Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
